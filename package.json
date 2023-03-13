@@ -1,0 +1,21 @@
+{
+  "name": "task-2-playwright-framework",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "codegen-login": "npx playwright codegen https://www.redmine.org/login",
+    "login_test": "npx playwright test login_test.spec.ts",
+    "lost_pass_test": "npx playwright test lost_password_test.spec.ts",
+    "generate_allure_report": "allure generate allure-results -o allure-report --clean",
+    "open_allure": "allure open allure-report"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.31.2",
+    "allure-commandline": "^2.21.0",
+    "allure-playwright": "^2.1.0"
+  }
+}

@@ -1,0 +1,32 @@
+import { test, expect } from '@playwright/test';
+
+test('test', async ({ page }) => {
+  await page.goto('https://www.redmine.org/login');
+  await page.getByLabel('Login:').click();
+  await page.getByLabel('Password:').click();
+  await page.getByRole('button', { name: 'Login »' }).click();
+  await page.getByRole('link', { name: 'Lost password' }).click();
+  await page.getByLabel('Email *').click();
+  await page.getByRole('button', { name: 'Submit' }).click();
+  await page.getByText('Your account is locked.').click();
+  await page.getByText('Invalid user or password').click();
+  await page.getByLabel('Login:').click();
+  await page.getByLabel('Login:').click();
+  await page.getByLabel('Password:').click();
+  await page.getByLabel('Password:').click();
+  await page.getByLabel('Password:').fill('test');
+  await page.getByRole('button', { name: 'Login »' }).click();
+  await page.goto('https://www.redmine.org/login');
+  await page.getByLabel('Stay logged in').check();
+  await page.getByText('Stay logged in').click();
+
+  await page.goto('https://www.redmine.org/account/lost_password');
+  await page.getByLabel('Email *').click();
+  await page.getByRole('button', { name: 'Submit' }).click();
+  await page.getByText('Your account is locked.').click();
+  await page.getByLabel('Email *').click();
+  await page.getByLabel('Email *').fill('qwe@qwe.com');
+  await page.getByRole('button', { name: 'Submit' }).click();
+  await page.getByText('You haven\'t activated your account yet. If you want to receive a new activation ').click();
+
+});
