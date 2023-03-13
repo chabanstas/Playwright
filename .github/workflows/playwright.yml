@@ -14,25 +14,43 @@ jobs:
       with:
         node-version: '16.x'
     - name: Install dependencies
-      run: npm ci
-    - name: Install Playwright 
-      run: npx playwright install --with-deps
-    - name: Run login page tests
-      run: npm run login_test
-    - name: Run lost password page tests
-      run: npm run lost_pass_test
-    - uses: actions/checkout@v2
+      run: |
+        npm ci
+        npx playwright install --with-deps
+        npm install -g allure-commandline
+    - name: Run tests
+      run: |
+        npm run login_test
+        npm run lost_pass_test
+        allure generate --clean
+    
+    - name: Copy previous Allure results
       if: always()
+      run: |
+        mkdir -p allure-results/history
+        if [ -d "$HOME/allure-results" ]; then cp -R $HOME/allure-results/history allure-results/; fi
+        cp -R allure-results/history allure-results/history-$(date '+%Y-%m-%d_%H-%M-%S')
+
+    - name: Create new report
+      run: |
+        allure generate --clean
+        echo "Allure report generated successfully!"
+
+    - name: Push report to other branch
+      uses: actions/github-script@v4
       with:
-        repository: chabanstas/Playwright
-        ref:  report
-        path: ./allure-report
-    - name: Generate Allure Report
-      if: always()
-      run: npm run generate_allure_report
-    - uses: actions/upload-artifact@v2
-      if: always()
+        script: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@users.noreply.github.com"
+          git checkout -b allure-report
+          git add .
+          git commit -m "Add Allure report"
+          git push origin allure-report
+
+    - name: Add GitHub Pages to branch with report
+      uses: peaceiris/actions-gh-pages@v3
       with:
-        name: report
-        path: allure-report/
-        retention-days: 30
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./allure-report
+        publish_branch: allure-report
+        cname: ${CNAME}
