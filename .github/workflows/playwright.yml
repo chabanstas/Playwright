@@ -21,3 +21,18 @@ jobs:
       run: npm run login_test
     - name: Run lost password page tests
       run: npm run lost_pass_test
+    - uses: actions/checkout@v2
+      if: always()
+      with:
+        repository: chabanstas/Playwright
+        ref:  report
+        path: ./allure-report
+    - name: Generate Allure Report
+      if: always()
+      run: npm run generate_allure_report
+    - uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: report
+        path: allure-report/
+        retention-days: 30
