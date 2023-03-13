@@ -21,4 +21,3 @@ jobs:
       run: npm run login_test
     - name: Run lost password page tests
       run: npm run lost_pass_test
-    - uses: actions/checkout@v2
