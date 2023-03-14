@@ -40,8 +40,8 @@ jobs:
       uses: actions/github-script@v4
       with:
         script: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@users.noreply.github.com"
+          git config --global user.name "chabanstas"
+          git config --global user.email "stanislav.chaban.02@gmail.com"
           git checkout -b allure-report
           git add .
           git commit -m "Add Allure report"
