@@ -1,4 +1,4 @@
-name: Testing for Redmine with Playwright and Allure
+name: Testing Playwright and Allure
 on:
   push:
     branches: main
@@ -12,42 +12,41 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v2
       with:
-        node-version: '16.x'
-        
+        node-version: '14.x'
     - name: Install dependencies
-      run: |
-        npm ci
-        npx playwright install --with-deps
-        npm install -g allure-commandline
-
-    - name: Run tests
+      run: npm ci
+    - name: Install Playwright 
+      run: npx playwright install --with-deps
+    - name: Run all tests
       run: |
         npm run login_test
         npm run lost_pass_test
-    
-    - name: Get Allure history
-      uses: actions/checkout@v2
+    - uses: actions/checkout@v2
       if: always()
-      continue-on-error: true
       with:
-        ref: gh-pages
-        path: gh-pages
-
-    - name: Allure Report action from marketplace
-      uses: simple-elf/allure-report-action@master
+        repository: chabanstas/Playwright
+        ref:  allure-report
+        path: ./allure-report
+    - name: Generate Allure Report
       if: always()
-      #id: allure-report
+      run: npm run generate_allure_report
+    - uses: actions/upload-artifact@v2
+      if: always()
       with:
-        allure_results: allure-results
-        #gh_pages: gh-pages
-        #allure_report: allure-report
-        allure_history: allure-history
-        keep_reports: 20
-
-    - name: Deploy report to Github Pages
+        name: allure-report
+        path: allure-report/
+        retention-days: 30
+    - name: Push to repository
+      uses: cpina/github-action-push-to-another-repository@main
       if: always()
-      uses: peaceiris/actions-gh-pages@v2
       env:
-        PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PUBLISH_BRANCH: gh-pages
-        PUBLISH_DIR: allure-history
+        API_TOKEN_GITHUB: ${{ secrets.SECRET_TOKEN }}
+      with:
+        source-directory: 'allure-report'
+        destination-github-username: 'chabanstas'
+        destination-repository-name: 'Playwright'
+        user-email: stanislav.chaban.02@gmail.com
+        target-branch: allure-report
+
+
+
