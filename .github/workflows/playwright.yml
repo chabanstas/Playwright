@@ -19,32 +19,35 @@ jobs:
         npm ci
         npx playwright install --with-deps
         npm install -g allure-commandline
-        
-    - name: Copy previous Allure results
-      if: always()
-      run: |
-        mkdir -p allure-results/history
-        if [ -d "$HOME/allure-results" ]; then cp -R $HOME/allure-results/history allure-results/; fi
-        cp -R allure-results/history allure-results/history-$(date '+%Y-%m-%d_%H-%M-%S')
 
     - name: Run tests
       run: |
         npm run login_test
         npm run lost_pass_test
     
-    - name: Create new report
-      run: |
-        allure generate --clean
-        echo "Allure report generated successfully!"
-      
-    - name: Push report to other branch
-      uses: actions/github-script@v4
+    - name: Get Allure history
+      uses: actions/checkout@v2
+      if: always()
+      continue-on-error: true
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          git config --global user.name "chabanstas"
-          git config --global user.email "stanislav.chaban.02@gmail.com"
-          git checkout -b allure-report
-          git add .
-          git commit -m "Add Allure report"
-          git push origin allure-report
+        ref: gh-pages
+        path: gh-pages
+
+    - name: Allure Report action from marketplace
+      uses: simple-elf/allure-report-action@master
+      if: always()
+      #id: allure-report
+      with:
+        allure_results: allure-results
+        #gh_pages: gh-pages
+        #allure_report: allure-report
+        allure_history: allure-history
+        keep_reports: 20
+
+    - name: Deploy report to Github Pages
+      if: always()
+      uses: peaceiris/actions-gh-pages@v2
+      env:
+        PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PUBLISH_BRANCH: gh-pages
+        PUBLISH_DIR: allure-history
