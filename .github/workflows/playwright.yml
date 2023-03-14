@@ -13,38 +13,38 @@ jobs:
     - uses: actions/setup-node@v2
       with:
         node-version: '16.x'
+        
     - name: Install dependencies
       run: |
         npm ci
         npx playwright install --with-deps
         npm install -g allure-commandline
+        
+    - name: Copy previous Allure results
+      if: always()
+      run: |
+        mkdir -p allure-results/history
+        if [ -d "$HOME/allure-results" ]; then cp -R $HOME/allure-results/history allure-results/; fi
+        cp -R allure-results/history allure-results/history-$(date '+%Y-%m-%d_%H-%M-%S')
+
     - name: Run tests
       run: |
         npm run login_test
         npm run lost_pass_test
-    - uses: actions/checkout@v2
-      if: always()
+    
+    - name: Create new report
+      run: |
+        allure generate --clean
+        echo "Allure report generated successfully!"
+      
+    - name: Push report to other branch
+      uses: actions/github-script@v4
       with:
-        repository: chabanstas/Playwright
-        ref:  allure-report
-        path: ./allure-report
-    - name: Generate Allure Report
-      if: always()
-      run: allure generate allure-results -o allure-report --clean
-    - uses: actions/upload-artifact@v2
-      if: always()
-      with:
-        name: report
-        path: allure-report/
-        retention-days: 30
-    - name: Push to repository
-      uses: cpina/github-action-push-to-another-repository@main
-      if: always()
-      env:
-        API_TOKEN_GITHUB: ${{ secrets.SECRET_TOKEN }}
-      with:
-        source-directory: 'allure-report'
-        destination-github-username: 'chabanstas'
-        destination-repository-name: 'Playwright'
-        user-email: stanislav.chaban.02@gmail.com
-        target-branch: allure-report
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          git config --global user.name "chabanstas"
+          git config --global user.email "stanislav.chaban.02@gmail.com"
+          git checkout -b allure-report
+          git add .
+          git commit -m "Add Allure report"
+          git push origin allure-report
