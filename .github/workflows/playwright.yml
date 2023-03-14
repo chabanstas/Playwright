@@ -22,7 +22,6 @@ jobs:
       run: |
         npm run login_test
         npm run lost_pass_test
-        allure generate --clean
     - name: Copy previous Allure results
       if: always()
       run: |
