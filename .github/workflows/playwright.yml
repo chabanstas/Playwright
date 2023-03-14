@@ -21,30 +21,28 @@ jobs:
       run: |
         npm run login_test
         npm run lost_pass_test
-    - uses: actions/checkout@v2
-      if: always()
+    - name: Create new report
+      run: |
+        allure generate --clean
+        echo "Allure report generated successfully!"
+
+    - name: Push report to other branch
+      uses: actions/github-script@v4
       with:
-        repository: chabanstas/Playwright
-        ref:  allure-report
-        path: ./allure-report
-    - name: Generate Allure Report
-      if: always()
-      run: npm run generate_allure_report
-    - uses: actions/upload-artifact@v2
-      if: always()
+        github-token: ${{ secrets.SECRET_TOKEN }}
+        script: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@users.noreply.github.com"
+          git checkout -b allure-report
+          git add .
+          git commit -m "Add Allure report"
+          git push origin allure-report
+
+    - name: Add GitHub Pages to branch with report
+      uses: peaceiris/actions-gh-pages@v3
       with:
-        name: allure-report
-        path: allure-report/
-        retention-days: 30
-    - name: Push to repository
-      uses: cpina/github-action-push-to-another-repository@main
-      if: always()
-      env:
-        API_TOKEN_GITHUB: ${{ secrets.SECRET_TOKEN }}
-      with:
-        source-directory: 'allure-report'
-        destination-github-username: 'chabanstas'
-        destination-repository-name: 'Playwright'
-        user-email: stanislav.chaban.02@gmail.com
-        target-branch: allure-report
+        github_token: ${{ secrets.SECRET_TOKEN }}
+        publish_dir: ./allure-report
+        publish_branch: allure-report
+        cname: ${CNAME}
 
