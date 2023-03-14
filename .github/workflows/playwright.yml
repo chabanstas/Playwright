@@ -17,6 +17,14 @@ jobs:
       run: npm ci
     - name: Install Playwright 
       run: npx playwright install --with-deps
+      
+    - name: Copy previous Allure results
+      if: always()
+      run: |
+        mkdir -p allure-results/history
+        if [ -d "$HOME/allure-results" ]; then cp -R $HOME/allure-results/history allure-results/; fi
+        cp -R allure-results/history allure-results/history-$(date '+%Y-%m-%d_%H-%M-%S')
+
     - name: Run all tests
       run: |
         npm run login_test
