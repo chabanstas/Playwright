@@ -31,7 +31,7 @@ jobs:
         npm run lost_pass_test
     - name: Create new report
       run: |
-        allure generate --clean
+        npm run generate_allure_report
         echo "Allure report generated successfully!"
 
     - name: Push report to other branch
