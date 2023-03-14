@@ -17,35 +17,36 @@ jobs:
       run: npm ci
     - name: Install Playwright 
       run: npx playwright install --with-deps
-      
-    - name: Copy previous Allure results
-      if: always()
-      run: |
-        mkdir -p allure-results/history
-        if [ -d "$HOME/allure-results" ]; then cp -R $HOME/allure-results/history allure-results/; fi
-        cp -R allure-results/history allure-results/history-$(date '+%Y-%m-%d_%H-%M-%S')
-
     - name: Run all tests
       run: |
         npm run login_test
         npm run lost_pass_test
-    - name: Create new report
-      run: |
-        npm run generate_allure_report
-        echo "Allure report generated successfully!"
-
-    - name: Push report to other branch
-      uses: actions/github-script@v4
+    - uses: actions/checkout@v2
+      if: always()
       with:
-        github-token: ${{ secrets.SECRET_TOKEN }}
-        script: |
-          git config --global user.name "chabanstas"
-          git config --global user.email "stanislav.chaban.02@gmail.com"
-          git checkout -b allure-report
-          git add .
-          git commit -m "Add Allure report"
-          git push origin allure-report
-
+        repository: chabanstas/Playwright
+        ref:  allure-report
+        path: ./allure-report
+    - name: Generate Allure Report
+      if: always()
+      run: npm run generate_allure_report
+    - uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: allure-report
+        path: allure-report/
+        retention-days: 30
+    - name: Push to repository
+      uses: cpina/github-action-push-to-another-repository@main
+      if: always()
+      env:
+        API_TOKEN_GITHUB: ${{ secrets.SECRET_TOKEN }}
+      with:
+        source-directory: 'allure-report'
+        destination-github-username: 'chabanstas'
+        destination-repository-name: 'Playwright'
+        user-email: stanislav.chaban.02@gmail.com
+        target-branch: allure-report
     - name: Add GitHub Pages to branch with report
       uses: peaceiris/actions-gh-pages@v3
       with:
