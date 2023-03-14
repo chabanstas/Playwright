@@ -18,7 +18,6 @@ jobs:
       run: |
         npm ci
         npx playwright install --with-deps
-        npm install allure-comandline -D
         
     - name: Copy previous Allure results
       if: always()
