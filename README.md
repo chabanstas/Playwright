@@ -27,4 +27,4 @@
 ## Allure report
 
 - npm run generate_allure_report
-- open_allure
+- npm run open_allure
