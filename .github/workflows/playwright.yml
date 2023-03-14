@@ -23,19 +23,16 @@ jobs:
         npm run login_test
         npm run lost_pass_test
         allure generate --clean
-    
     - name: Copy previous Allure results
       if: always()
       run: |
         mkdir -p allure-results/history
         if [ -d "$HOME/allure-results" ]; then cp -R $HOME/allure-results/history allure-results/; fi
         cp -R allure-results/history allure-results/history-$(date '+%Y-%m-%d_%H-%M-%S')
-
     - name: Create new report
       run: |
         allure generate --clean
         echo "Allure report generated successfully!"
-
     - name: Push report to other branch
       uses: actions/github-script@v4
       with:
@@ -46,11 +43,9 @@ jobs:
           git add .
           git commit -m "Add Allure report"
           git push origin allure-report
-
     - name: Add GitHub Pages to branch with report
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./allure-report
         publish_branch: allure-report
-        cname: ${CNAME}
